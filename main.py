@@ -30,7 +30,7 @@ class ObedBot:
         if self._its_time:
             if await self.calendar.today() == DateType.WORKING:
                 logger.debug('Bot send photo and vote')
-                self.bot.send_photo(self._chat_id, open('1314608791_uncle_sam_pointing_finger.jpg', 'rb'))
+                self.bot.send_photo(self._chat_id, open('photo.jpg', 'rb'))
                 self.bot.send_poll(self._chat_id, "А ты идешь на обэд?", ['да', 'нет'], is_anonymous=False)
             self._its_time = False
         time.sleep(60)
