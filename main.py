@@ -24,16 +24,20 @@ gmt = 3
 class ObedBot:
     def __init__(self):
         logger.debug('Initialize bot')
-        self._token = os.environ['API_TOKEN']
-        self._chat_id = os.environ['CHAT_ID']
+        self._token = "os.environ['API_TOKEN']"
+        self._chat_id = "os.environ['CHAT_ID']"
         self.bot = telebot.TeleBot(self._token)
         self.calendar = ProdCalendar(locale='ru')
         self._its_time = False
         self._offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
         self._delta = self._offset // 60 // 60 * -1
         self._real_hour = expected_hour + self._delta - gmt
-        self.real_hour_str = str(self._real_hour) + f":{expected_minute}"
-        logger.debug(f"Real time to send is {self.real_hour_str}")
+        if self._real_hour // 10 == 0:
+            self._real_hour_str = "0" + str(self._real_hour)
+        else:
+            self._real_hour_str = str(self._real_hour)
+        self.real_time_str = self._real_hour_str + f":{expected_minute}"
+        logger.debug(f"Real time to send is {self.real_time_str}")
 
     async def main(self):
         while True:
@@ -60,7 +64,7 @@ if __name__ == "__main__":
     bot = ObedBot()
     try:
         logger.debug('Set schedule task')
-        schedule.every().day.at(bot.real_hour_str).do(bot.set_flag)
+        schedule.every().day.at(bot.real_time_str).do(bot.set_flag)
         Thread(target=schedule_checker, daemon=True).start()
         logger.debug('Run bot')
         loop = asyncio.get_event_loop()
