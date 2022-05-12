@@ -16,6 +16,10 @@ handler = StreamHandler(stream=sys.stdout)
 handler.setFormatter(Formatter(fmt='[%(asctime)s: %(levelname)s] %(message)s'))
 logger.addHandler(handler)
 
+expected_hour = 12
+expected_minute = '00'
+gmt = 3
+
 
 class ObedBot:
     def __init__(self):
@@ -25,16 +29,21 @@ class ObedBot:
         self.bot = telebot.TeleBot(self._token)
         self.calendar = ProdCalendar(locale='ru')
         self._its_time = False
+        self._offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
+        self._delta = self._offset // 60 // 60 * -1
+        self._real_hour = expected_hour - self._delta + gmt
+        self.real_hour_str = str(self._real_hour) + f":{expected_minute}"
+        logger.debug(f"Real time to send is {self.real_hour_str}")
 
     async def main(self):
-        if self._its_time:
-            if await self.calendar.today() == DateType.WORKING:
-                logger.debug('Bot send photo and vote')
-                self.bot.send_photo(self._chat_id, open('1314608791_uncle_sam_pointing_finger.jpg', 'rb'))
-                self.bot.send_poll(self._chat_id, "А ты идешь на обэд?", ['да', 'нет'], is_anonymous=False)
-            self._its_time = False
-        time.sleep(60)
-        await self.main()
+        while True:
+            if self._its_time:
+                if await self.calendar.today() == DateType.WORKING:
+                    logger.debug('Bot send photo and vote')
+                    self.bot.send_photo(self._chat_id, open('photo.jpg', 'rb'))
+                    self.bot.send_poll(self._chat_id, "А ты идешь на обэд?", ['да', 'нет'], is_anonymous=False)
+                self._its_time = False
+            time.sleep(60)
 
     def set_flag(self):
         logger.debug('Set time flag. Now its the time!')
@@ -51,7 +60,7 @@ if __name__ == "__main__":
     bot = ObedBot()
     try:
         logger.debug('Set schedule task')
-        schedule.every().day.at("12:00").do(bot.set_flag)
+        schedule.every().day.at(bot.real_hour_str).do(bot.set_flag)
         Thread(target=schedule_checker, daemon=True).start()
         logger.debug('Run bot')
         loop = asyncio.get_event_loop()
