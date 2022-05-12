@@ -24,8 +24,8 @@ gmt = 3
 class ObedBot:
     def __init__(self):
         logger.debug('Initialize bot')
-        self._token = "os.environ['API_TOKEN']"
-        self._chat_id = "os.environ['CHAT_ID']"
+        self._token = os.environ['API_TOKEN']
+        self._chat_id = os.environ['CHAT_ID']
         self.bot = telebot.TeleBot(self._token)
         self.calendar = ProdCalendar(locale='ru')
         self._its_time = False
