@@ -31,7 +31,7 @@ class ObedBot:
         self._its_time = False
         self._offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
         self._delta = self._offset // 60 // 60 * -1
-        self._real_hour = expected_hour - self._delta + gmt
+        self._real_hour = expected_hour + self._delta - gmt
         self.real_hour_str = str(self._real_hour) + f":{expected_minute}"
         logger.debug(f"Real time to send is {self.real_hour_str}")
 
